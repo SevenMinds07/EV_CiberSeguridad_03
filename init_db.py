@@ -1,4 +1,5 @@
 import sqlite3
+from werkzeug.security import generate_password_hash
 
 def crear_base_de_datos():
     conexion = sqlite3.connect('vulnerable.db')
@@ -8,23 +9,23 @@ def crear_base_de_datos():
     cursor.execute('''
         CREATE TABLE usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
+            username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             rol TEXT NOT NULL,
             bio TEXT
         )
     ''')
     
-    # Usuarios de prueba: el admin tiene una contraseña "fuerte" pero es vulnerable a SQLi
+    # Contraseñas almacenadas de forma segura con hash PBKDF2-SHA256
     usuarios = [
-        ('admin', 'admin123', 'admin', 'Cuenta de administrador del sistema.'),
-        ('alumno', '12345', 'user', 'Soy un estudiante aprendiendo hacking.')
+        ('admin', generate_password_hash('Admin#Segura2026!'), 'admin', 'Cuenta de administrador del sistema.'),
+        ('alumno', generate_password_hash('Alumno#Segura2026!'), 'user', 'Soy un estudiante aprendiendo hacking.')
     ]
     
     cursor.executemany('INSERT INTO usuarios (username, password, rol, bio) VALUES (?, ?, ?, ?)', usuarios)
     conexion.commit()
     conexion.close()
-    print("Base de datos inicializada con sistema de roles.")
+    print("Base de datos inicializada con contraseñas cifradas (hash).")
 
 if __name__ == "__main__":
     crear_base_de_datos()
